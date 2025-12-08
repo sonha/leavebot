@@ -35,9 +35,12 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     name = employee.get("name", telegram_username)
     email = employee.get("email", "")
 
+    manager_email = employee.get("manager_email", "Chưa cập nhật")
+
     await update.message.reply_text(
         f"✅ Xin chào {name}!\n"
-        f"📧 Email: {email}\n\n"
+        f"📧 Email: {email}\n"
+        f"👤 Quản lý: {manager_email}\n\n"
         f"Sử dụng /nghiphep để xin nghỉ phép."
     )
 
