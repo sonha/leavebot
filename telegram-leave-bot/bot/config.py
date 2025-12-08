@@ -6,8 +6,9 @@ load_dotenv()
 # Telegram Bot Token
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Google Apps Script Web App URL
-SHEET_API_URL = os.getenv("SHEET_API_URL")
+# Google Sheets Config
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+GOOGLE_CREDENTIALS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
 
 # Telegram Group ID for approvals
 APPROVAL_GROUP_ID = int(os.getenv("APPROVAL_GROUP_ID", "0"))
@@ -16,7 +17,9 @@ APPROVAL_GROUP_ID = int(os.getenv("APPROVAL_GROUP_ID", "0"))
 def validate_config():
     if not BOT_TOKEN:
         raise ValueError("BOT_TOKEN is required")
-    if not SHEET_API_URL:
-        raise ValueError("SHEET_API_URL is required")
+    if not SPREADSHEET_ID:
+        raise ValueError("SPREADSHEET_ID is required")
+    if not os.path.exists(GOOGLE_CREDENTIALS_FILE):
+        raise ValueError(f"Credentials file not found at: {GOOGLE_CREDENTIALS_FILE}")
     if not APPROVAL_GROUP_ID:
         raise ValueError("APPROVAL_GROUP_ID is required")
