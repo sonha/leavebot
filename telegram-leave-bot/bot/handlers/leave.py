@@ -47,6 +47,10 @@ from bot.config import APPROVAL_GROUP_ID
 
 async def nghiphep_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle /nghiphep command - start leave request flow."""
+    # Only allow in private chat
+    if update.effective_chat.type != "private":
+        return ConversationHandler.END
+
     user = update.effective_user
     telegram_username = f"@{user.username}" if user.username else None
 

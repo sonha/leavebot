@@ -9,6 +9,10 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     Handle /start command.
     Auto-check if user's Telegram is registered in Nhân sự sheet.
     """
+    # Only allow in private chat
+    if update.effective_chat.type != "private":
+        return
+
     user = update.effective_user
     telegram_username = f"@{user.username}" if user.username else None
 
