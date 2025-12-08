@@ -2,6 +2,9 @@ import gspread
 from bot.config import SPREADSHEET_ID, GOOGLE_CREDENTIALS_FILE
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
+import json
+import os
+import asyncio
 
 class GoogleSheetService:
     _instance = None
@@ -28,10 +31,6 @@ class GoogleSheetService:
     def get_sheet(self, sheet_name: str):
         return self._get_spreadsheet().worksheet(sheet_name)
 
-import json
-import os
-import asyncio
-
 # Cache file path
 EMPLOYEES_FILE = 'data/employees.json'
 
@@ -46,8 +45,6 @@ def clear_employee_cache():
     _employee_cache = None
     _cache_time = None
     
-import asyncio
-
 # ... (imports remain)
 
 async def _fetch_all_employees_from_sheet() -> list:
