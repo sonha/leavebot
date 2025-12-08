@@ -6,6 +6,7 @@ from bot.config import BOT_TOKEN, validate_config
 from bot.handlers.start import get_start_handler
 from bot.handlers.leave import get_leave_handler
 from bot.handlers.approval import get_approval_handler
+from bot.handlers.admin import get_admin_handler
 from bot.services.reminder import setup_reminder_scheduler
 
 # Set up logging
@@ -28,6 +29,7 @@ def main() -> None:
     application.add_handler(get_start_handler())
     application.add_handler(get_leave_handler())
     application.add_handler(get_approval_handler())
+    application.add_handler(get_admin_handler())
 
     # Set up reminder scheduler
     scheduler = setup_reminder_scheduler(application.bot)

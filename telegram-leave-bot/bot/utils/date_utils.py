@@ -1,7 +1,8 @@
 from datetime import datetime, date
+from typing import Union
 
 
-def format_date(d: date | datetime | str) -> str:
+def format_date(d: Union[date, datetime, str]) -> str:
     """Format date as dd/MM/yyyy."""
     if isinstance(d, str):
         # Try to parse ISO format
@@ -14,7 +15,7 @@ def format_date(d: date | datetime | str) -> str:
     return d.strftime("%d/%m/%Y")
 
 
-def format_date_short(d: date | datetime | str) -> str:
+def format_date_short(d: Union[date, datetime, str]) -> str:
     """Format date as dd/MM."""
     if isinstance(d, str):
         try:
@@ -36,7 +37,7 @@ def parse_date(date_str: str) -> date:
     raise ValueError(f"Cannot parse date: {date_str}")
 
 
-def is_weekend(d: date | datetime) -> bool:
+def is_weekend(d: Union[date, datetime]) -> bool:
     """Check if date is weekend (Saturday or Sunday)."""
     if isinstance(d, datetime):
         d = d.date()

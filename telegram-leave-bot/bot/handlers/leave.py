@@ -1,4 +1,13 @@
 from datetime import datetime, date
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ContextTypes,
@@ -348,90 +357,112 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         return ConversationHandler.END
 
     if query.data == "confirm_yes":
-        employee = context.user_data["employee"]
-        leave_req = context.user_data["leave_request"]
+        try:
+            employee = context.user_data["employee"]
+            leave_req = context.user_data["leave_request"]
 
-        # Generate request ID
-        request_id = generate_request_id()
+            # Generate request ID
+            request_id = generate_request_id()
 
-        # Prepare request data
-        request_data = {
-            "employee_email": employee.get("email"),
-            "employee_telegram": f"@{update.effective_user.username}",
-            "employee_name": employee.get("name"),
-            "manager_email": employee.get("manager_email"),
-            "manager_telegram": employee.get("manager_telegram"),
-            "leave_type": leave_req["leave_type"],
-            "start_date": leave_req["start_date"],
-            "start_shift": leave_req["start_shift"],
-            "end_date": leave_req.get("end_date"),
-            "end_shift": leave_req.get("end_shift"),
-            "reason": leave_req["reason"],
-            "user_chat_id": update.effective_chat.id
-        }
+            # Prepare request data
+            request_data = {
+                "employee_email": employee.get("email"),
+                "employee_telegram": f"@{update.effective_user.username}",
+                "employee_name": employee.get("name"),
+                "manager_email": employee.get("manager_email"),
+                "manager_telegram": employee.get("manager_telegram"),
+                "leave_type": leave_req["leave_type"],
+                "start_date": leave_req["start_date"],
+                "start_shift": leave_req["start_shift"],
+                "end_date": leave_req.get("end_date"),
+                "end_shift": leave_req.get("end_shift"),
+                "reason": leave_req["reason"],
+                "user_chat_id": update.effective_chat.id
+            }
 
-        # Save to pending requests
-        save_request(request_id, request_data)
+            # Save to pending requests
+            save_request(request_id, request_data)
 
-        # Calculate leave days
-        start_date = date.fromisoformat(leave_req["start_date"])
-        end_date = date.fromisoformat(leave_req["end_date"]) if leave_req.get("end_date") else None
-        num_days = calculate_leave_days(
-            start_date,
-            leave_req["start_shift"],
-            end_date,
-            leave_req.get("end_shift")
-        )
+            # Calculate leave days
+            start_date = date.fromisoformat(leave_req["start_date"])
+            end_date = date.fromisoformat(leave_req["end_date"]) if leave_req.get("end_date") else None
+            num_days = calculate_leave_days(
+                start_date,
+                leave_req["start_shift"],
+                end_date,
+                leave_req.get("end_shift")
+            )
 
-        # Send to approval group
-        manager_tag = employee.get("manager_telegram", "")
+            # Send to approval group
+            manager_tag = employee.get("manager_telegram", "")
 
-        approval_msg = (
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📋 YÊU CẦU NGHỈ PHÉP #{request_id}\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"👤 Người gửi: {employee.get('name')} ({employee.get('email')})\n"
-            f"👔 Quản lý: {manager_tag}\n"
-            f"📌 Loại: {leave_req['leave_type']}\n"
-            f"📅 Từ: {format_date(start_date)} ({leave_req['start_shift']})\n"
-        )
+            approval_msg = (
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"📋 YÊU CẦU NGHỈ PHÉP #{request_id}\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"👤 Người gửi: {employee.get('name')} ({employee.get('email')})\n"
+                f"👔 Quản lý: {manager_tag}\n"
+                f"📌 Loại: {leave_req['leave_type']}\n"
+                f"📅 Từ: {format_date(start_date)} ({leave_req['start_shift']})\n"
+            )
 
-        if end_date:
-            approval_msg += f"📅 Đến: {format_date(end_date)} ({leave_req['end_shift']})\n"
+            if end_date:
+                approval_msg += f"📅 Đến: {format_date(end_date)} ({leave_req['end_shift']})\n"
 
-        approval_msg += (
-            f"⏱ Số ngày: {num_days} ngày\n"
-            f"📝 Lý do: {leave_req['reason']}\n"
-            f"🕐 Gửi lúc: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        )
+            approval_msg += (
+                f"⏱ Số ngày: {num_days} ngày\n"
+                f"📝 Lý do: {leave_req['reason']}\n"
+                f"🕐 Gửi lúc: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            )
 
-        keyboard = [
-            [
-                InlineKeyboardButton("✅ Duyệt", callback_data=f"approve_{request_id}"),
-                InlineKeyboardButton("❌ Từ chối", callback_data=f"reject_{request_id}")
+            keyboard = [
+                [
+                    InlineKeyboardButton("✅ Duyệt", callback_data=f"approve_{request_id}"),
+                    InlineKeyboardButton("❌ Từ chối", callback_data=f"reject_{request_id}")
+                ]
             ]
-        ]
 
-        # Send to approval group
-        sent_msg = await context.bot.send_message(
-            chat_id=APPROVAL_GROUP_ID,
-            text=approval_msg,
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+            # Send to approval group
+            sent_msg = await context.bot.send_message(
+                chat_id=APPROVAL_GROUP_ID,
+                text=approval_msg,
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
 
-        # Update pending request with message ID
-        from bot.services.pending_store import update_request
-        update_request(request_id, {"message_id": sent_msg.message_id})
+            # Update pending request with message ID
+            from bot.services.pending_store import update_request
+            update_request(request_id, {"message_id": sent_msg.message_id})
 
-        # Confirm to user
-        await query.edit_message_text(
-            f"✅ Đã gửi yêu cầu nghỉ phép!\n"
-            f"📋 Mã yêu cầu: #{request_id}\n"
-            f"⏳ Đang chờ phê duyệt từ quản lý."
-        )
+            # Confirm to user
+            await query.edit_message_text(
+                f"✅ Đã gửi yêu cầu nghỉ phép!\n"
+                f"📋 Mã yêu cầu: #{request_id}\n"
+                f"⏳ Đang chờ phê duyệt từ quản lý."
+            )
 
-        return ConversationHandler.END
+            return ConversationHandler.END
+
+        except Exception as e:
+            # Log the error
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error in confirm_request: {e}", exc_info=True)
+
+            # Inform user of the error
+            try:
+                await query.edit_message_text(
+                    f"❌ Có lỗi xảy ra khi gửi yêu cầu!\n"
+                    f"Chi tiết lỗi: {str(e)}\n\n"
+                    f"Vui lòng thử lại hoặc liên hệ admin."
+                )
+            except:
+                await update.effective_chat.send_message(
+                    f"❌ Có lỗi xảy ra khi gửi yêu cầu!\n"
+                    f"Chi tiết lỗi: {str(e)}\n\n"
+                    f"Vui lòng thử lại hoặc liên hệ admin."
+                )
+            return ConversationHandler.END
 
     return CONFIRM
 

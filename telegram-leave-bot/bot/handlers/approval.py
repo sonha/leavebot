@@ -71,7 +71,12 @@ async def process_approval(query, context, request_id: str, request: dict, appro
     success = await approve_leave(approval_data)
 
     if not success:
-        await query.answer("❌ Lỗi khi ghi vào hệ thống. Vui lòng thử lại.", show_alert=True)
+        # Since we already called answer("Processing"), we cannot call it again for an alert.
+        # We must send a message or edit the text.
+        try:
+            await query.message.reply_text("❌ Lỗi khi ghi vào hệ thống. Vui lòng thử lại sau.")
+        except Exception:
+            pass # Ignore if we can't reply
         return
 
     # Delete from pending requests
