@@ -197,23 +197,30 @@ async def approve_leave(request_data: dict) -> bool:
     Append approved leave to 'Raw' sheet.
     """
     try:
-        # Prepare row data (same logic as before)
+        # Get leave_minutes for Đi muộn/Về sớm, otherwise leave blank
+        leave_type = request_data.get('leave_type', '')
+        leave_minutes = ''
+        if leave_type in ['Đi muộn', 'Về sớm']:
+            leave_minutes = request_data.get('leave_minutes', '')
+
+        # Prepare row data
+        # Columns: A=blank, B=Loại, C=Email, D=Quản lý, E=blank, F=Lý do, G=Số phút, H-K=Dates/Shifts, L-N=Timestamps, O=Revoked
         row = [
-            '=ROW()-1',
-            request_data.get('leave_type', ''),
-            request_data.get('employee_email', ''),
-            request_data.get('manager_email', ''),
-            request_data.get('reason', ''),
-            'Submitted via Telegram Bot',
-            '', # Leave minutes
-            request_data.get('start_date', ''),
-            request_data.get('start_shift', ''),
-            request_data.get('end_date', ''),
-            request_data.get('end_shift', ''),
-            request_data.get('created_at', ''),
-            request_data.get('approved_by', ''), 
-            request_data.get('approved_at', ''),
-            'No'
+            '',                                      # A: blank
+            leave_type,                              # B: Loại Hình
+            request_data.get('employee_email', ''),  # C: Người Gửi
+            request_data.get('manager_email', ''),   # D: Quản Lý
+            '',                                      # E: blank
+            request_data.get('reason', ''),          # F: Lý Do
+            leave_minutes,                           # G: Số phút đi muộn/về sớm
+            request_data.get('start_date', ''),      # H: Thời gian bắt đầu
+            request_data.get('start_shift', ''),     # I: Ca bắt đầu
+            request_data.get('end_date', ''),        # J: Thời gian kết thúc
+            request_data.get('end_shift', ''),       # K: Ca kết thúc
+            request_data.get('created_at', ''),      # L: Tạo lúc
+            request_data.get('approved_by', ''),     # M: Duyệt bởi
+            request_data.get('approved_at', ''),     # N: Duyệt lúc
+            'No'                                     # O: Revoked
         ]
 
         def _append():
