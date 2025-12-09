@@ -1,5 +1,9 @@
 from datetime import datetime, date
+from zoneinfo import ZoneInfo
 import logging
+
+# Vietnam timezone (UTC+7)
+VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -476,7 +480,7 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
             approval_msg += (
                 f"📝 Lý do: {leave_req['reason']}\n"
-                f"🕐 Gửi lúc: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
+                f"🕐 Gửi lúc: {datetime.now(VN_TZ).strftime('%d/%m/%Y %H:%M')}\n"
             )
 
             keyboard = [
@@ -531,7 +535,7 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return CONFIRM
 
 
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def cancel_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancel the conversation."""
     await update.message.reply_text("❌ Đã hủy yêu cầu.")
     return ConversationHandler.END

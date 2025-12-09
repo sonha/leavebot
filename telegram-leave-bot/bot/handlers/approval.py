@@ -1,10 +1,14 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 
 from bot.services.pending_store import get_request, delete_request
 from bot.services.google_sheet import approve_leave, get_employee_by_telegram
 from bot.utils.date_utils import format_date
+
+# Vietnam timezone (UTC+7)
+VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 
 
 async def handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -52,7 +56,7 @@ async def process_approval(query, context, request_id: str, request: dict, appro
     await query.answer("✅ Đang xử lý...")
 
     # Prepare data for Google Sheet
-    now = datetime.now()
+    now = datetime.now(VN_TZ)
     approval_data = {
         "employee_email": request.get("employee_email"),
         "manager_email": request.get("manager_email"),
@@ -100,7 +104,7 @@ async def process_approval(query, context, request_id: str, request: dict, appro
         f"📅 {date_range}\n"
         f"📅 Từ: {format_date(start_date)} ({leave_req['start_shift']})\n"
         f"📝 Lý do: {leave_req['reason']}\n"
-        f"🕐 Gửi lúc: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
+        f"🕐 Gửi lúc: {datetime.now(VN_TZ).strftime('%d/%m/%Y %H:%M')}\n"
         f"✅ Duyệt bởi: {approver} ({now.strftime('%d/%m/%Y %H:%M')})\n"
     )
 
