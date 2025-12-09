@@ -98,8 +98,10 @@ async def process_approval(query, context, request_id: str, request: dict, appro
         f"👤 Người gửi: {employee_name}\n"
         f"📌 Loại: {request.get('leave_type')}\n"
         f"📅 {date_range}\n"
+        f"📅 Từ: {format_date(start_date)} ({leave_req['start_shift']})\n"
+        f"📝 Lý do: {leave_req['reason']}\n"
+        f"🕐 Gửi lúc: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
         f"✅ Duyệt bởi: {approver} ({now.strftime('%d/%m/%Y %H:%M')})\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━"
     )
 
     await query.edit_message_text(updated_msg)

@@ -414,10 +414,8 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 approval_msg += f"📅 Đến: {format_date(end_date)} ({leave_req['end_shift']})\n"
 
             approval_msg += (
-                f"⏱ Số ngày: {num_days} ngày\n"
                 f"📝 Lý do: {leave_req['reason']}\n"
                 f"🕐 Gửi lúc: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n"
-                "━━━━━━━━━━━━━━━━━━━━━━━━━━"
             )
 
             keyboard = [
