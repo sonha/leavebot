@@ -7,7 +7,10 @@ LEAVE_TYPE_PREFIX = "leave_type"
 LEAVE_TYPES = {
     "wfh": "WFH",
     "nghiphep": "Nghỉ phép",
-    "nghikhongluong": "Nghỉ không lương"
+    "nghikhongluong": "Nghỉ không lương",
+    "nghidacbiet": "Nghỉ đặc biệt",
+    "vesom": "Về sớm",
+    "dimuon": "Đi muộn"
 }
 
 
@@ -31,7 +34,25 @@ def create_leave_type_keyboard() -> InlineKeyboardMarkup:
                 "📋 Nghỉ không lương",
                 callback_data=f"{LEAVE_TYPE_PREFIX}_nghikhongluong"
             )
-        ]
+        ],
+        [
+            InlineKeyboardButton(
+                "⭐ Nghỉ đặc biệt",
+                callback_data=f"{LEAVE_TYPE_PREFIX}_nghidacbiet"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "🚪 Về sớm",
+                callback_data=f"{LEAVE_TYPE_PREFIX}_vesom"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "🐢 Đi muộn",
+                callback_data=f"{LEAVE_TYPE_PREFIX}_dimuon"
+            )
+        ],
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -41,7 +62,7 @@ def parse_leave_type_callback(callback_data: str) -> str:
     Parse leave type callback data.
 
     Returns:
-        Leave type string (e.g., "WFH", "Nghỉ phép", "Nghỉ không lương")
+        Leave type string (e.g., "WFH", "Nghỉ phép", "Nghỉ không lương", "Nghỉ đặc biệt", "Về sớm", "Đi muộn")
         or None if invalid
     """
     if not callback_data.startswith(LEAVE_TYPE_PREFIX):
