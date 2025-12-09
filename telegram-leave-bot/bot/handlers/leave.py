@@ -29,7 +29,7 @@ from bot.keyboards.calendar import (
 from bot.keyboards.leave_type import create_leave_type_keyboard, parse_leave_type_callback
 from bot.keyboards.shift import create_shift_keyboard, parse_shift_callback
 from bot.utils.date_utils import format_date, format_date_short, calculate_leave_days
-from bot.config import APPROVAL_GROUP_ID
+from bot.config import APPROVAL_GROUP_ID, APPROVAL_TOPIC_ID
 
 
 # Conversation states
@@ -425,11 +425,12 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 ]
             ]
 
-            # Send to approval group
+            # Send to approval group (with topic support)
             sent_msg = await context.bot.send_message(
                 chat_id=APPROVAL_GROUP_ID,
                 text=approval_msg,
-                reply_markup=InlineKeyboardMarkup(keyboard)
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                message_thread_id=APPROVAL_TOPIC_ID
             )
 
             # Update pending request with message ID

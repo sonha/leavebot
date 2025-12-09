@@ -13,6 +13,9 @@ GOOGLE_CREDENTIALS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json
 # Telegram Group ID for approvals
 APPROVAL_GROUP_ID = int(os.getenv("APPROVAL_GROUP_ID", "0"))
 
+# Telegram Topic ID for approvals (for forum groups)
+APPROVAL_TOPIC_ID = int(os.getenv("APPROVAL_TOPIC_ID", "0")) or None
+
 # Validate required config
 def validate_config():
     if not BOT_TOKEN:
