@@ -40,9 +40,10 @@ from bot.config import APPROVAL_GROUP_ID, APPROVAL_TOPIC_ID
     SELECT_END_DATE,
     SELECT_START_SHIFT,
     SELECT_END_SHIFT,
+    INPUT_MINUTES,
     INPUT_REASON,
     CONFIRM
-) = range(8)
+) = range(9)
 
 
 async def nghiphep_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -143,6 +144,21 @@ async def handle_start_calendar(update: Update, context: ContextTypes.DEFAULT_TY
     if action == "day":
         selected_date = date(parsed["year"], parsed["month"], parsed["day"])
         context.user_data["leave_request"]["start_date"] = selected_date.isoformat()
+
+        leave_type = context.user_data["leave_request"].get("leave_type")
+
+        # For Đi muộn/Về sớm - skip date mode, go directly to shift selection
+        if leave_type in ["Đi muộn", "Về sớm"]:
+            context.user_data["leave_request"]["end_date"] = None
+            date_str = format_date_short(selected_date)
+
+            await query.edit_message_text(
+                f"⏰ CHỌN CA LÀM VIỆC\n"
+                f"Ngày: {format_date(selected_date)}",
+                reply_markup=create_shift_keyboard(prefix="start", date_str=date_str)
+            )
+
+            return SELECT_START_SHIFT
 
         # Ask if single day or date range
         keyboard = [
@@ -255,6 +271,7 @@ async def select_start_shift(update: Update, context: ContextTypes.DEFAULT_TYPE)
     context.user_data["leave_request"]["start_shift"] = parsed["shift"]
 
     end_date = context.user_data["leave_request"].get("end_date")
+    leave_type = context.user_data["leave_request"].get("leave_type")
 
     if end_date:
         # Multi-day - ask for end shift
@@ -266,8 +283,16 @@ async def select_start_shift(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return SELECT_END_SHIFT
     else:
-        # Single day - go to reason input
+        # Single day
         context.user_data["leave_request"]["end_shift"] = None
+
+        # Check if Đi muộn or Về sớm - need to input minutes
+        if leave_type in ["Đi muộn", "Về sớm"]:
+            await query.edit_message_text(
+                "⏱ NHẬP SỐ PHÚT\n"
+                f"Vui lòng nhập số phút {leave_type.lower()}:"
+            )
+            return INPUT_MINUTES
 
         await query.edit_message_text(
             "📝 NHẬP LÝ DO\n"
@@ -291,6 +316,30 @@ async def select_end_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     await query.edit_message_text(
         "📝 NHẬP LÝ DO\n"
         "Vui lòng nhập lý do nghỉ:"
+    )
+
+    return INPUT_REASON
+
+
+async def input_minutes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Handle minutes input for Đi muộn/Về sớm."""
+    text = update.message.text.strip()
+
+    # Validate that input is a number
+    try:
+        minutes = int(text)
+        if minutes <= 0:
+            await update.message.reply_text("❌ Số phút phải lớn hơn 0. Vui lòng nhập lại:")
+            return INPUT_MINUTES
+    except ValueError:
+        await update.message.reply_text("❌ Vui lòng nhập số phút hợp lệ (ví dụ: 15, 30, 45):")
+        return INPUT_MINUTES
+
+    context.user_data["leave_request"]["leave_minutes"] = minutes
+
+    await update.message.reply_text(
+        "📝 NHẬP LÝ DO\n"
+        "Vui lòng nhập lý do:"
     )
 
     return INPUT_REASON
@@ -320,18 +369,24 @@ async def input_reason(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     )
 
     # Build confirmation message
+    leave_type = leave_req['leave_type']
     msg = (
         "📋 XÁC NHẬN THÔNG TIN\n"
         "━━━━━━━━━━━━━━━━━━━━\n"
-        f"📌 Loại: {leave_req['leave_type']}\n"
+        f"📌 Loại: {leave_type}\n"
         f"📅 Từ: {format_date(start_date)} ({leave_req['start_shift']})\n"
     )
 
     if end_date:
         msg += f"📅 Đến: {format_date(end_date)} ({leave_req['end_shift']})\n"
 
+    # Show minutes for Đi muộn/Về sớm, otherwise show days
+    if leave_type in ["Đi muộn", "Về sớm"]:
+        msg += f"⏱ Số phút: {leave_req.get('leave_minutes', 0)} phút\n"
+    else:
+        msg += f"⏱ Số ngày: {num_days} ngày\n"
+
     msg += (
-        f"⏱ Số ngày: {num_days} ngày\n"
         f"📝 Lý do: {reason}\n"
         "━━━━━━━━━━━━━━━━━━━━"
     )
@@ -380,6 +435,7 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 "start_shift": leave_req["start_shift"],
                 "end_date": leave_req.get("end_date"),
                 "end_shift": leave_req.get("end_shift"),
+                "leave_minutes": leave_req.get("leave_minutes"),
                 "reason": leave_req["reason"],
                 "user_chat_id": update.effective_chat.id
             }
@@ -399,6 +455,7 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
             # Send to approval group
             manager_tag = employee.get("manager_telegram", "")
+            leave_type = leave_req['leave_type']
 
             approval_msg = (
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -406,12 +463,16 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
                 f"👤 Người gửi: {employee.get('name')} ({employee.get('email')})\n"
                 f"👔 Quản lý: {manager_tag}\n"
-                f"📌 Loại: {leave_req['leave_type']}\n"
+                f"📌 Loại: {leave_type}\n"
                 f"📅 Từ: {format_date(start_date)} ({leave_req['start_shift']})\n"
             )
 
             if end_date:
                 approval_msg += f"📅 Đến: {format_date(end_date)} ({leave_req['end_shift']})\n"
+
+            # Show minutes for Đi muộn/Về sớm
+            if leave_type in ["Đi muộn", "Về sớm"]:
+                approval_msg += f"⏱ Số phút: {leave_req.get('leave_minutes', 0)} phút\n"
 
             approval_msg += (
                 f"📝 Lý do: {leave_req['reason']}\n"
@@ -498,6 +559,9 @@ def get_leave_handler() -> ConversationHandler:
             ],
             SELECT_END_SHIFT: [
                 CallbackQueryHandler(select_end_shift, pattern="^shift_end_")
+            ],
+            INPUT_MINUTES: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, input_minutes)
             ],
             INPUT_REASON: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, input_reason)
