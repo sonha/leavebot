@@ -537,7 +537,7 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def cancel_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancel the conversation."""
-    await update.message.reply_text("❌ Đã hủy yêu cầu.")
+    await update.message.reply_text("✅ Đã huỷ lệnh thành công")
     return ConversationHandler.END
 
 
@@ -574,6 +574,6 @@ def get_leave_handler() -> ConversationHandler:
                 CallbackQueryHandler(confirm_request, pattern="^confirm_")
             ]
         },
-        fallbacks=[CommandHandler("cancel", cancel)],
+        fallbacks=[CommandHandler("cancel", cancel_command)],
         per_message=False
     )

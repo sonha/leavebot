@@ -16,6 +16,9 @@ APPROVAL_GROUP_ID = int(os.getenv("APPROVAL_GROUP_ID", "0"))
 # Telegram Topic ID for approvals (for forum groups)
 APPROVAL_TOPIC_ID = int(os.getenv("APPROVAL_TOPIC_ID", "0")) or None
 
+# Admin ID for error notifications
+ADMIN_ID = int(os.getenv("ADMIN_ID", "0")) or None
+
 # Validate required config
 def validate_config():
     if not BOT_TOKEN:

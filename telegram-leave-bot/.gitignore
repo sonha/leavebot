@@ -14,9 +14,11 @@ venv/
 env/
 ENV/
 .venv
+.env
 
 # Data files
 data/pending_requests.json
+data/employees.json
 
 # Logs
 *.log

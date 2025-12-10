@@ -8,6 +8,7 @@ from bot.handlers.leave import get_leave_handler
 from bot.handlers.approval import get_approval_handler
 from bot.handlers.admin import get_admin_handler
 from bot.services.reminder import setup_reminder_scheduler
+from bot.utils.error_handler import global_error_handler
 
 # Set up logging
 logging.basicConfig(
@@ -30,6 +31,9 @@ def main() -> None:
     application.add_handler(get_leave_handler())
     application.add_handler(get_approval_handler())
     application.add_handler(get_admin_handler())
+
+    # Add global error handler
+    application.add_error_handler(global_error_handler)
 
     # Set up reminder scheduler
     scheduler = setup_reminder_scheduler(application.bot)

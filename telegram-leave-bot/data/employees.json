@@ -342,5 +342,13 @@
     "manager_email": "",
     "is_official": false,
     "is_working": true
+  },
+  {
+    "name": "gm",
+    "email": "gm@nerdlabs.tech",
+    "telegram": "@patrick_cz",
+    "manager_email": "hieu.trinh@nerdlabs.tech",
+    "is_official": false,
+    "is_working": true
   }
 ]

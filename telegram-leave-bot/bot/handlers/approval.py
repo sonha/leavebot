@@ -1,11 +1,14 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import logging
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler
 
 from bot.services.pending_store import get_request, delete_request
 from bot.services.google_sheet import approve_leave, get_employee_by_telegram
 from bot.utils.date_utils import format_date
+
+logger = logging.getLogger(__name__)
 
 # Vietnam timezone (UTC+7)
 VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
@@ -119,7 +122,7 @@ async def process_approval(query, context, request_id: str, request: dict, appro
                 text=f"✅ Yêu cầu #{request_id} đã được duyệt!"
             )
         except Exception as e:
-            print(f"Error sending DM to user: {e}")
+            logger.error(f"Error sending DM to user: {e}")
 
 
 async def process_rejection(query, context, request_id: str, request: dict, rejector: str) -> None:
@@ -133,7 +136,7 @@ async def process_rejection(query, context, request_id: str, request: dict, reje
     employee_name = request.get("employee_name", request.get("employee_email"))
     start_date = request.get("start_date")
     end_date = request.get("end_date")
-    now = datetime.now()
+    now = datetime.now(VN_TZ)
 
     date_range = format_date(start_date)
     if end_date:
@@ -161,7 +164,7 @@ async def process_rejection(query, context, request_id: str, request: dict, reje
                 text=f"❌ Yêu cầu #{request_id} đã bị từ chối."
             )
         except Exception as e:
-            print(f"Error sending DM to user: {e}")
+            logger.error(f"Error sending DM to user: {e}")
 
 
 def get_approval_handler() -> CallbackQueryHandler:
