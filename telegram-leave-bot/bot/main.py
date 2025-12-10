@@ -42,6 +42,7 @@ def main() -> None:
     async def on_startup(app):
         scheduler.start()
         logger.info("Reminder scheduler started")
+        logger.info("Daily backup scheduled at 2:00 AM")
 
     async def on_shutdown(app):
         scheduler.shutdown()

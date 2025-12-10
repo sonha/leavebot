@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
@@ -13,8 +12,14 @@ def _load_pending() -> dict:
     """Load pending requests from JSON file."""
     if not PENDING_FILE.exists():
         return {}
-    with open(PENDING_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(PENDING_FILE, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if not content:  # File is empty
+                return {}
+            return json.loads(content)
+    except json.JSONDecodeError:
+        return {}
 
 
 def _save_pending(data: dict) -> None:
@@ -57,6 +62,15 @@ def get_request(request_id: str) -> Optional[dict]:
 def get_all_requests() -> dict:
     """Get all pending requests."""
     return _load_pending()
+
+
+async def get_all_requests_with_fallback() -> dict:
+    """
+    Get all pending requests with fallback to Google Sheets.
+    If local file is empty, restores from Google Sheets backup.
+    """
+    from bot.services.pending_backup import load_pending_with_fallback
+    return await load_pending_with_fallback()
 
 
 def get_requests_by_employee(employee_telegram: str) -> dict:

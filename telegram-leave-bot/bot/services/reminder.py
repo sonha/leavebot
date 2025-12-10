@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram import Bot
 
 from bot.services.pending_store import get_requests_older_than, mark_reminder_sent
+from bot.services.pending_backup import backup_pending_requests_to_sheet
 from bot.config import BOT_TOKEN
 
 
@@ -56,6 +57,19 @@ async def check_pending_reminders(bot: Bot) -> None:
         print(f"[{datetime.now()}] Reminder marked for request #{request_id}")
 
 
+async def daily_backup_task() -> None:
+    """
+    Backup pending requests to Google Sheets.
+    This function is called by the scheduler once per day.
+    """
+    print(f"[{datetime.now()}] Running daily backup of pending requests...")
+    success = await backup_pending_requests_to_sheet()
+    if success:
+        print(f"[{datetime.now()}] Daily backup completed successfully")
+    else:
+        print(f"[{datetime.now()}] Daily backup failed")
+
+
 def setup_reminder_scheduler(bot: Bot) -> AsyncIOScheduler:
     """
     Set up the reminder scheduler.
@@ -63,13 +77,23 @@ def setup_reminder_scheduler(bot: Bot) -> AsyncIOScheduler:
     """
     scheduler = AsyncIOScheduler()
 
-    # Run every hour
+    # Run reminder check every hour
     scheduler.add_job(
         check_pending_reminders,
         'interval',
         hours=1,
         args=[bot],
         id='reminder_check',
+        replace_existing=True
+    )
+
+    # Run backup once per day at 2 AM
+    scheduler.add_job(
+        daily_backup_task,
+        'cron',
+        hour=2,
+        minute=0,
+        id='daily_backup',
         replace_existing=True
     )
 
