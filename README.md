@@ -15,8 +15,9 @@ A Telegram bot for managing employee leave requests with Google Sheets integrati
 
 - Python 3.8 or higher (tested with Python 3.9.6)
 - Google Sheets with "Nhân sự" (employee) and "Raw" (leave records) sheets
+- **Google Sheets API enabled** in your Google Cloud project
 - Telegram bot token from [@BotFather](https://t.me/BotFather)
-- Google service account credentials
+- Google service account credentials with access to your spreadsheet
 
 ## Installation
 
@@ -38,6 +39,39 @@ A Telegram bot for managing employee leave requests with Google Sheets integrati
 3. **Set up Google Sheets credentials**:
    - Place your Google service account JSON file as `credentials.json` in the project root
    - Ensure the service account has edit access to your spreadsheet
+
+## Testing Your Setup
+
+Before running the bot, test your configuration:
+
+1. **Test Google Sheets connection**:
+   ```bash
+   python3 test_connection.py
+   ```
+   This verifies:
+   - Google Sheets API is enabled
+   - Credentials file is valid
+   - Service account has access to the spreadsheet
+   - Can read from "Nhân sự" sheet
+   - Can write to "Raw" sheet
+
+2. **Test Telegram group connection**:
+   ```bash
+   python3 test_group_connection.py
+   ```
+   This verifies:
+   - Bot token is valid
+   - Bot is in the approval group
+   - Bot can send messages to the group
+   - Group ID and topic ID (if used) are correct
+
+3. **Find group ID** (if needed):
+   ```bash
+   python3 find_group_id.py
+   ```
+   - Add bot to your group
+   - Send any message in the group
+   - Script will print the group ID
 
 ## Running the Bot
 
@@ -149,15 +183,63 @@ telegram-leave-bot/
 - Verify user has Telegram username set in "Nhân sự" sheet
 - Check username format (no @ symbol in sheet)
 
+### Error: "Vui lòng thử lại hoặc liên hệ admin" (Please try again or contact admin)
+This error occurs when submitting a leave request. Common causes:
+
+1. **Bot not in approval group**:
+   - Add the bot to your approval Telegram group
+   - Ensure the bot has permission to send messages
+   - If using topics, ensure the bot can post in that topic
+
+2. **Incorrect group ID**:
+   - Run `python3 test_group_connection.py` to test connection
+   - Use `python3 find_group_id.py` to find the correct group ID:
+     - Add bot to group, then send any message
+     - Script will print the group ID
+   - Update `APPROVAL_GROUP_ID` in `.env` file
+
+3. **Invalid topic ID**:
+   - If not using topics, set `APPROVAL_TOPIC_ID=0` or leave it empty
+   - If using topics, verify the topic ID is correct
+
+### Error: "Lỗi khi ghi vào hệ thống" (Error writing to system)
+This error occurs when approving a leave request. The bot cannot write to Google Sheets.
+
+1. **Google Sheets API not enabled**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Navigate to APIs & Services > Library
+   - Search for "Google Sheets API"
+   - Click "Enable"
+   - Wait 2-3 minutes for changes to propagate
+
+2. **Service account permissions**:
+   - Open your `credentials.json` file
+   - Find the service account email (looks like `xxx@xxx.iam.gserviceaccount.com`)
+   - Open your Google Sheet
+   - Share the sheet with the service account email
+   - Give it "Editor" access
+
+3. **Missing "Raw" sheet**:
+   - Ensure your spreadsheet has a sheet named exactly "Raw"
+   - Create it if it doesn't exist
+
+4. **Test connection**:
+   ```bash
+   python3 test_connection.py
+   ```
+   This will show detailed error messages if something is wrong.
+
 ### Approval buttons don't work
 - Ensure bot is added to approval group
 - Make bot an admin in the group
 - Verify APPROVAL_GROUP_ID is correct (negative number)
+- Check that the request hasn't already been processed
 
 ### Google Sheets errors
 - Confirm service account has edit access to spreadsheet
 - Check SPREADSHEET_ID in .env matches your sheet
 - Verify sheet names are exactly "Nhân sự" and "Raw"
+- Ensure Google Sheets API is enabled (see above)
 
 ## Stopping the Bot
 

@@ -12,6 +12,9 @@ async def main():
         print(f"✅ Connection Successful! Connected to Sheet: '{sheet_title}'")
     except Exception as e:
         print(f"❌ Connection Failed: {e}")
+        import traceback
+        print("\nFull error details:")
+        traceback.print_exc()
         return
 
     # 2. Test Write Access (Append to Raw)

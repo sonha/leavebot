@@ -80,8 +80,19 @@ async def process_approval(query, context, request_id: str, request: dict, appro
     if not success:
         # Since we already called answer("Processing"), we cannot call it again for an alert.
         # We must send a message or edit the text.
+        error_msg = (
+            "❌ Lỗi khi ghi vào hệ thống!\n\n"
+            "Có thể do:\n"
+            "• Google Sheets API chưa được bật\n"
+            "• Không kết nối được với Google Sheets\n"
+            "• Sheet 'Raw' không tồn tại\n"
+            "• Bot không có quyền ghi vào sheet\n"
+            "• File credentials không đúng\n\n"
+            "Vui lòng liên hệ admin để kiểm tra.\n"
+            "Kiểm tra logs để biết chi tiết lỗi."
+        )
         try:
-            await query.message.reply_text("❌ Lỗi khi ghi vào hệ thống. Vui lòng thử lại sau.")
+            await query.message.reply_text(error_msg)
         except Exception:
             pass # Ignore if we can't reply
         return

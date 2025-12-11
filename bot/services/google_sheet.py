@@ -196,6 +196,9 @@ async def approve_leave(request_data: dict) -> bool:
     """
     Append approved leave to 'Raw' sheet.
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
         # Get leave_minutes for Đi muộn/Về sớm, otherwise leave blank
         leave_type = request_data.get('leave_type', '')
@@ -230,7 +233,21 @@ async def approve_leave(request_data: dict) -> bool:
 
         # Run blocking call in thread
         await asyncio.to_thread(_append)
+        logger.info(f"Successfully wrote leave approval to Raw sheet")
         return True
+    except gspread.exceptions.APIError as e:
+        error_msg = str(e)
+        if "has not been used" in error_msg or "is disabled" in error_msg:
+            logger.error(f"Google Sheets API not enabled: {e}", exc_info=True)
+        else:
+            logger.error(f"Google Sheets API error when approving leave: {e}", exc_info=True)
+        return False
+    except gspread.exceptions.WorksheetNotFound as e:
+        logger.error(f"Worksheet 'Raw' not found: {e}", exc_info=True)
+        return False
+    except FileNotFoundError as e:
+        logger.error(f"Credentials file not found: {e}", exc_info=True)
+        return False
     except Exception as e:
-        print(f"Error approving leave: {e}")
+        logger.error(f"Error approving leave: {e}", exc_info=True)
         return False
