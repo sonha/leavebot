@@ -99,9 +99,9 @@ async def process_approval(query, context, request_id: str, request: dict, appro
         date_range += f" - {format_date(end_date)}"
 
     updated_msg = (
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "━━━━━━━━━━━━━━━━━━\n"
         f"✅ ĐÃ DUYỆT #{request_id}\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "━━━━━━━━━━━━━━━━━━\n"
         f"👤 Người gửi: {employee_name}\n"
         f"📌 Loại: {request.get('leave_type')}\n"
         f"📅 {date_range}\n"
@@ -143,14 +143,14 @@ async def process_rejection(query, context, request_id: str, request: dict, reje
         date_range += f" - {format_date(end_date)}"
 
     updated_msg = (
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
         f"❌ TỪ CHỐI #{request_id}\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
         f"👤 Người gửi: {employee_name}\n"
         f"📌 Loại: {request.get('leave_type')}\n"
         f"📅 {date_range}\n"
         f"❌ Từ chối bởi: {rejector} ({now.strftime('%d/%m/%Y %H:%M')})\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        "━━━━━━━━━━━━━━━━━━━"
     )
 
     await query.edit_message_text(updated_msg)

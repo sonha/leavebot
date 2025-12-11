@@ -376,7 +376,7 @@ async def input_reason(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     leave_type = leave_req['leave_type']
     msg = (
         "📋 XÁC NHẬN THÔNG TIN\n"
-        "━━━━━━━━━━━━━━━━━━━━\n"
+        "━━━━━━━━━━━━━━━\n"
         f"📌 Loại: {leave_type}\n"
         f"📅 Từ: {format_date(start_date)} ({leave_req['start_shift']})\n"
     )
@@ -392,7 +392,7 @@ async def input_reason(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
     msg += (
         f"📝 Lý do: {reason}\n"
-        "━━━━━━━━━━━━━━━━━━━━"
+        "━━━━━━━━━━━━━━━"
     )
 
     keyboard = [
@@ -462,9 +462,9 @@ async def confirm_request(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             leave_type = leave_req['leave_type']
 
             approval_msg = (
-                "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "━━━━━━━━━━━━━\n"
                 f"📋 YÊU CẦU NGHỈ PHÉP #{request_id}\n"
-                "━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                "━━━━━━━━━━━━━\n"
                 f"👤 Người gửi: {employee.get('name')} ({employee.get('email')})\n"
                 f"👔 Quản lý: {manager_tag}\n"
                 f"📌 Loại: {leave_type}\n"
