@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Nguyễn Văn A",
+    "email": "a.nguyen@example.com",
+    "telegram": "@nguyen_van_a",
+    "manager_email": "manager@example.com",
+    "is_official": true,
+    "is_working": true
+  },
+  {
+    "name": "Trần Thị B",
+    "email": "b.tran@example.com",
+    "telegram": "@tran_thi_b",
+    "manager_email": "manager@example.com",
+    "is_official": true,
+    "is_working": true
+  },
+  {
+    "name": "Lê Văn C",
+    "email": "c.le@example.com",
+    "telegram": "@le_van_c",
+    "manager_email": "team_lead@example.com",
+    "is_official": false,
+    "is_working": true
+  },
+  {
+    "name": "Phạm Thị D",
+    "email": "d.pham@example.com",
+    "telegram": "",
+    "manager_email": "",
+    "is_official": true,
+    "is_working": false
+  },
+  {
+    "name": "Hoàng Văn E",
+    "email": "e.hoang@example.com",
+    "telegram": "@hoang_van_e",
+    "manager_email": "team_lead@example.com",
+    "is_official": true,
+    "is_working": true
+  }
+]
